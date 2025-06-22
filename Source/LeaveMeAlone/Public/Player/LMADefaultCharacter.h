@@ -10,6 +10,8 @@ class USpringArmComponent;
 
 class UCameraComponent;
 
+class ULMAHealthComponent;
+
 UCLASS()
 class LEAVEMEALONE_API ALMADefaultCharacter : public ACharacter
 {
@@ -42,6 +44,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	float MinArmLength = 500.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components|Health")
+	ULMAHealthComponent* HealthComponent;
+
+	UFUNCTION(BlueprintCallable)
+	bool getSprintStatus();
+
+	UFUNCTION(BlueprintCallable)
+	bool getStaminaAvailable();
+
+	FTimerHandle StaminaDecreaseTimer;
+	FTimerHandle StaminaIncreaseTimer;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -54,12 +68,20 @@ private:
 	float ArmLength = 1400.0f;
 	float FOV = 55.0f;
 
+	const int MaxStamina = 5;
+
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
 
 	void ChangeSpringArm(float Value);
+	
+	bool SprintState = false;
+	int Stamina;
 
-
-
+	void SprintEnable();
+	void SprintDisable();
+	void DecreaseStamina();
+	void IncreaseStamina();
+	//bool JogStraight();
 };

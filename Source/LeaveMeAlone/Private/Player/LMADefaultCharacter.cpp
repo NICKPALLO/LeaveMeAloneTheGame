@@ -8,7 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "LMAHealthComponent.h"
-//#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "TimerManager.h"
 #include "Engine/Engine.h"
 
@@ -30,7 +30,7 @@ ALMADefaultCharacter::ALMADefaultCharacter()
 	SpringArmComponent->bEnableCameraLag = true;
 	CameraComponent->SetFieldOfView(FOV);
 	CameraComponent->bUsePawnControlRotation = false;
-
+	
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -38,6 +38,9 @@ ALMADefaultCharacter::ALMADefaultCharacter()
 	HealthComponent = CreateDefaultSubobject<ULMAHealthComponent>("HealthComponent");
 
 	Stamina = MaxStamina;
+
+	//HealthComponent->OnDeath.AddUObject(this, &ALMADefaultCharacter::OnDeath);
+
 }
 
 // Called when the game starts or when spawned
@@ -49,6 +52,13 @@ void ALMADefaultCharacter::BeginPlay()
 	{
 		CurrentCursor = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), CursorMaterial, CursorSize, FVector(0));
 	}
+
+	HealthComponent->OnDeath.AddUObject(this, &ALMADefaultCharacter::OnDeath);
+
+	OnHealthChanged(HealthComponent->GetHealth());
+	HealthComponent->OnHealthChanged.AddUObject(this, &ALMADefaultCharacter::OnHealthChanged);
+
+
 }
 
 bool ALMADefaultCharacter::getSprintStatus()
@@ -60,20 +70,14 @@ bool ALMADefaultCharacter::getSprintStatus()
 void ALMADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PC)
+	if (!(HealthComponent->IsDead()))
 	{
-		FHitResult ResultHit;
-		PC->GetHitResultUnderCursor(ECC_GameTraceChannel1, true, ResultHit);
-		float FindRotatorResultYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
-		SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
-		if (CurrentCursor)
-		{
-			CurrentCursor->SetWorldLocation(ResultHit.Location);
-		}
+		RotationPlayerOnCursor();
 	}
 	FString text1 = TEXT("Stamina: ")+ FString::FromInt(Stamina);
+	//FString text2 = TEXT("Health: ") + FString::SanitizeFloat(this->HealthComponent->GetHealth());
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Black, text1, true, FVector2D(2.0f, 2.0f));
+	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Black, text2, false, FVector2D(2.0f, 2.0f));
 }
 
 // Called to bind functionality to input
@@ -85,6 +89,10 @@ void ALMADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("ChangeSpringArm", this, &ALMADefaultCharacter::ChangeSpringArm);
 	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &ALMADefaultCharacter::SprintEnable);
 	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &ALMADefaultCharacter::SprintDisable);
+}
+
+void ALMADefaultCharacter::OnHealthChanged(float NewHealth) {
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Health = %f"), NewHealth));
 }
 
 
@@ -124,6 +132,33 @@ void ALMADefaultCharacter::IncreaseStamina()
 	else
 	{
 		GetWorldTimerManager().ClearTimer(StaminaIncreaseTimer);
+	}
+}
+
+void ALMADefaultCharacter::OnDeath() {
+	CurrentCursor->DestroyRenderState_Concurrent();
+	PlayAnimMontage(DeathMontage);
+	GetCharacterMovement()->DisableMovement();
+	SetLifeSpan(5.0f);
+	if (Controller)
+	{
+		Controller->ChangeState(NAME_Spectating);
+	}
+}
+
+
+void ALMADefaultCharacter::RotationPlayerOnCursor() {
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC)
+	{
+		FHitResult ResultHit;
+		PC->GetHitResultUnderCursor(ECC_GameTraceChannel1, true, ResultHit);
+		float FindRotatorResultYaw = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ResultHit.Location).Yaw;
+		SetActorRotation(FQuat(FRotator(0.0f, FindRotatorResultYaw, 0.0f)));
+		if (CurrentCursor)
+		{
+			CurrentCursor->SetWorldLocation(ResultHit.Location);
+		}
 	}
 };
 

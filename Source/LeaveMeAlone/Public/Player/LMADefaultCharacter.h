@@ -12,6 +12,9 @@ class UCameraComponent;
 
 class ULMAHealthComponent;
 
+class UAnimMontage;
+
+
 UCLASS()
 class LEAVEMEALONE_API ALMADefaultCharacter : public ACharacter
 {
@@ -56,12 +59,23 @@ protected:
 	FTimerHandle StaminaDecreaseTimer;
 	FTimerHandle StaminaIncreaseTimer;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* DeathMontage;
+
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void OnHealthChanged(float NewHealth);
+
+	UFUNCTION()
+	ULMAHealthComponent* GetHealthComponent() const { return HealthComponent; } 
+
 
 private:
 	float YRotation = -75.0f;
@@ -84,4 +98,7 @@ private:
 	void DecreaseStamina();
 	void IncreaseStamina();
 	//bool JogStraight();
+
+	void OnDeath();
+	void RotationPlayerOnCursor();
 };

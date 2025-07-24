@@ -14,6 +14,7 @@ class ULMAHealthComponent;
 
 class UAnimMontage;
 
+class ULMA_WeaponComponent;
 
 UCLASS()
 class LEAVEMEALONE_API ALMADefaultCharacter : public ACharacter
@@ -62,6 +63,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* DeathMontage;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	ULMA_WeaponComponent* WeaponComponent;
 
 
 public:	

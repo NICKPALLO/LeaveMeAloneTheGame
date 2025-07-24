@@ -1,0 +1,116 @@
+// LeaveMeAlone Game by Netologiya. All RightsReserved
+
+
+#include "LMA_WeaponComponent.h"
+#include "Weapon/LMABaseWeapon.h"
+#include "Player/LMADefaultCharacter.h"
+#include "Animations/LMAReloadFinishedAnimNotify.h"
+//#include "TimerManager.h"
+#include "Engine/World.h"
+
+
+// Sets default values for this component's properties
+ULMA_WeaponComponent::ULMA_WeaponComponent()
+{
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// off to improve performance if you don't need them.
+	PrimaryComponentTick.bCanEverTick = true;
+
+	// ...
+}
+
+void ULMA_WeaponComponent::StartFire() {
+	if (Weapon && !AnimReloading)
+	{
+		GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ULMA_WeaponComponent::Shot, 1.0f, true);
+	}
+}
+
+void ULMA_WeaponComponent::StopFire() {
+	GetWorld()->GetTimerManager().ClearTimer(ShotTimer);
+}
+
+void ULMA_WeaponComponent::SpawnWeapon() {
+	Weapon = GetWorld()->SpawnActor<ALMABaseWeapon>(WeaponClass);
+	if (Weapon)
+	{
+		const auto Character = Cast<ACharacter>(GetOwner());
+		if (Character)
+		{
+			FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, false);
+			Weapon->AttachToComponent(Character->GetMesh(), AttachmentRules, "r_Weapon_Socket");
+		}
+	}
+}
+
+
+// Called when the game starts
+void ULMA_WeaponComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	SpawnWeapon();
+	InitAnimNotify();
+	// ...
+	
+}
+
+
+// Called every frame
+void ULMA_WeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// ...
+}
+
+void ULMA_WeaponComponent::Shot()
+{
+	if (Weapon && !AnimReloading)
+	{
+		Weapon->Fire();
+	}
+}
+
+void ULMA_WeaponComponent::InitAnimNotify()
+{
+	if (!ReloadMontage)
+	{
+		return;
+	}
+
+	const auto NotifiesEvents = ReloadMontage->Notifies;
+	for (auto NotifyEvent : NotifiesEvents)
+	{
+		auto ReloadFinish = Cast<ULMAReloadFinishedAnimNotify>(NotifyEvent.Notify);
+		if (ReloadFinish)
+		{
+			ReloadFinish->OnNotifyReloadFinished.AddUObject(this, &ULMA_WeaponComponent::OnNotifyReloadFinished);
+			break;
+		}
+	}
+}
+
+void ULMA_WeaponComponent::OnNotifyReloadFinished(USkeletalMeshComponent* SkeletalMesh) {
+	const auto Character = Cast<ACharacter>(GetOwner());
+	if (Character->GetMesh() == SkeletalMesh)
+	{
+		AnimReloading = false;
+	}
+}
+
+bool ULMA_WeaponComponent::CanReload() const
+{
+	return !AnimReloading;
+}
+
+void ULMA_WeaponComponent::Reload()
+{
+	if (!CanReload())
+		{
+			return;
+		}
+	Weapon->ChangeClip();
+	AnimReloading = true;
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	Character->PlayAnimMontage(ReloadMontage);
+}

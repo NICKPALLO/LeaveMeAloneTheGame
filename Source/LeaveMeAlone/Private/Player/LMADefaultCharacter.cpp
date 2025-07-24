@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TimerManager.h"
 #include "Engine/Engine.h"
+#include "LMA_WeaponComponent.h"
 
 // Sets default values
 ALMADefaultCharacter::ALMADefaultCharacter()
@@ -40,7 +41,7 @@ ALMADefaultCharacter::ALMADefaultCharacter()
 	Stamina = MaxStamina;
 
 	//HealthComponent->OnDeath.AddUObject(this, &ALMADefaultCharacter::OnDeath);
-
+	WeaponComponent = CreateDefaultSubobject<ULMA_WeaponComponent>("Weapon");
 }
 
 // Called when the game starts or when spawned
@@ -89,6 +90,8 @@ void ALMADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("ChangeSpringArm", this, &ALMADefaultCharacter::ChangeSpringArm);
 	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &ALMADefaultCharacter::SprintEnable);
 	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &ALMADefaultCharacter::SprintDisable);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, WeaponComponent, &ULMA_WeaponComponent::Fire);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, WeaponComponent, &ULMA_WeaponComponent::Reload);
 }
 
 void ALMADefaultCharacter::OnHealthChanged(float NewHealth) {

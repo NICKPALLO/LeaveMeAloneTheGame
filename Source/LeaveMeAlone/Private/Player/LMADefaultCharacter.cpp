@@ -88,9 +88,10 @@ void ALMADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("MoveForward", this, &ALMADefaultCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ALMADefaultCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("ChangeSpringArm", this, &ALMADefaultCharacter::ChangeSpringArm);
-	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &ALMADefaultCharacter::SprintEnable);
-	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &ALMADefaultCharacter::SprintDisable);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, WeaponComponent, &ULMA_WeaponComponent::Fire);
+	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &ALMADefaultCharacter::StartSprint);
+	PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &ALMADefaultCharacter::StopSprint);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, WeaponComponent, &ULMA_WeaponComponent::StartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, WeaponComponent, &ULMA_WeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, WeaponComponent, &ULMA_WeaponComponent::Reload);
 }
 
@@ -100,17 +101,25 @@ void ALMADefaultCharacter::OnHealthChanged(float NewHealth) {
 
 
 
-void ALMADefaultCharacter::SprintEnable()
+float ALMADefaultCharacter::GetVelocity()
 {
-	SprintState = true;
-	GetWorldTimerManager().ClearTimer(StaminaIncreaseTimer);
-	GetWorldTimerManager().SetTimer(StaminaDecreaseTimer, this, &ALMADefaultCharacter::DecreaseStamina, 1.0f, true);
+	return GetCharacterMovement()->Velocity.Length();
 }
-void ALMADefaultCharacter::SprintDisable()
+
+void ALMADefaultCharacter::StartSprint()
+{
+	if (GetVelocity() > 0)
+	{
+		SprintState = true;
+		GetWorldTimerManager().ClearTimer(StaminaIncreaseTimer);
+		GetWorldTimerManager().SetTimer(StaminaDecreaseTimer, this, &ALMADefaultCharacter::DecreaseStamina, 1.0f, true, 0.0f);
+	}
+}
+void ALMADefaultCharacter::StopSprint()
 {
 	SprintState = false;
 	GetWorldTimerManager().ClearTimer(StaminaDecreaseTimer);
-	GetWorldTimerManager().SetTimer(StaminaIncreaseTimer, this, &ALMADefaultCharacter::IncreaseStamina, 1.0f, true);
+	GetWorldTimerManager().SetTimer(StaminaIncreaseTimer, this, &ALMADefaultCharacter::IncreaseStamina, 1.0f, true, 0.0f);
 }
 
 void ALMADefaultCharacter::DecreaseStamina()
@@ -123,7 +132,7 @@ void ALMADefaultCharacter::DecreaseStamina()
 	{
 		SprintState = false;
 		GetWorldTimerManager().ClearTimer(StaminaDecreaseTimer);
-		GetWorldTimerManager().SetTimer(StaminaIncreaseTimer, this, &ALMADefaultCharacter::IncreaseStamina, 1.0f, true);
+		GetWorldTimerManager().SetTimer(StaminaIncreaseTimer, this, &ALMADefaultCharacter::IncreaseStamina, 1.0f, true, 0.0f);
 	}
 };
 void ALMADefaultCharacter::IncreaseStamina()

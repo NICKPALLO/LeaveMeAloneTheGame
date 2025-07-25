@@ -96,8 +96,10 @@ private:
 	bool SprintState = false;
 	int Stamina;
 
-	void SprintEnable();
-	void SprintDisable();
+	float GetVelocity();
+
+	void StartSprint();
+	void StopSprint();
 	void DecreaseStamina();
 	void IncreaseStamina();
 	//bool JogStraight();

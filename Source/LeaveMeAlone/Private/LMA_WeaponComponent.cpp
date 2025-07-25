@@ -22,7 +22,7 @@ ULMA_WeaponComponent::ULMA_WeaponComponent()
 void ULMA_WeaponComponent::StartFire() {
 	if (Weapon && !AnimReloading)
 	{
-		GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ULMA_WeaponComponent::Shot, 1.0f, true);
+		GetWorld()->GetTimerManager().SetTimer(ShotTimer, Weapon, &ALMABaseWeapon::Fire, 0.1f, true, 0.0f);
 	}
 }
 
@@ -50,6 +50,10 @@ void ULMA_WeaponComponent::BeginPlay()
 	Super::BeginPlay();
 	SpawnWeapon();
 	InitAnimNotify();
+
+	Weapon->OnReload.AddUObject(this, &ULMA_WeaponComponent::StopFire);
+	Weapon->OnReload.AddUObject(this, &ULMA_WeaponComponent::Reload);
+
 	// ...
 	
 }
@@ -63,13 +67,13 @@ void ULMA_WeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	// ...
 }
 
-void ULMA_WeaponComponent::Shot()
-{
-	if (Weapon && !AnimReloading)
-	{
-		Weapon->Fire();
-	}
-}
+//void ULMA_WeaponComponent::Shot()
+//{
+//	if (Weapon && !AnimReloading)
+//	{
+//		Weapon->Fire();
+//	}
+//}
 
 void ULMA_WeaponComponent::InitAnimNotify()
 {
@@ -100,7 +104,7 @@ void ULMA_WeaponComponent::OnNotifyReloadFinished(USkeletalMeshComponent* Skelet
 
 bool ULMA_WeaponComponent::CanReload() const
 {
-	return !AnimReloading;
+	return (!AnimReloading && !Weapon->ClipIsFull());
 }
 
 void ULMA_WeaponComponent::Reload()

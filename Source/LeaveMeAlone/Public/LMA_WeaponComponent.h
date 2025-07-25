@@ -40,7 +40,7 @@ protected:
 	bool AnimReloading = false;
 	void InitAnimNotify();
 	void OnNotifyReloadFinished(USkeletalMeshComponent* SkeletalMesh);
-	void Shot();
+	//void Shot();
 	bool CanReload() const;
 
 public:	

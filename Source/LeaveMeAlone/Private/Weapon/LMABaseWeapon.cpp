@@ -45,12 +45,19 @@ void ALMABaseWeapon::Tick(float DeltaTime)
 
 }
 
+bool ALMABaseWeapon::ClipIsFull() const
+{
+	return CurrentAmmoWeapon.Bullets == AmmoWeapon.Bullets;
+}
+
 void ALMABaseWeapon::DecrementBullets() {
 	--CurrentAmmoWeapon.Bullets;
 	UE_LOG(LogWeapon, Display, TEXT("Bullets = %s"), *FString::FromInt(CurrentAmmoWeapon.Bullets));
 	if (IsCurrentClipEmpty())
 	{
-		ChangeClip();
+		//ChangeClip();
+		//тригеррим делегат
+		OnReload.Broadcast();
 	}
 }
 

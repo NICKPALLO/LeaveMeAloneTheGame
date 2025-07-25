@@ -8,6 +8,8 @@
 
 class USkeletalMeshComponent;
 
+DECLARE_MULTICAST_DELEGATE(FOnReload);
+
 DEFINE_LOG_CATEGORY_STATIC(LogWeapon, All, All);
 
 USTRUCT(BlueprintType)
@@ -50,6 +52,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	FOnReload OnReload;
+	bool ClipIsFull() const;
 
 private:
 	FAmmoWeapon CurrentAmmoWeapon;

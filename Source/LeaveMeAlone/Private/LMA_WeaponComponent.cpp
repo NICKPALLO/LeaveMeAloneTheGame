@@ -5,7 +5,6 @@
 #include "Weapon/LMABaseWeapon.h"
 #include "Player/LMADefaultCharacter.h"
 #include "Animations/LMAReloadFinishedAnimNotify.h"
-//#include "TimerManager.h"
 #include "Engine/World.h"
 
 
@@ -67,13 +66,15 @@ void ULMA_WeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	// ...
 }
 
-//void ULMA_WeaponComponent::Shot()
-//{
-//	if (Weapon && !AnimReloading)
-//	{
-//		Weapon->Fire();
-//	}
-//}
+bool ULMA_WeaponComponent::GetCurrentWeaponAmmo(FAmmoWeapon& AmmoWeapon) const
+{
+	if (Weapon)
+	{
+		AmmoWeapon = Weapon->GetCurrentAmmoWeapon();
+		return true;
+	}
+	return false;
+}
 
 void ULMA_WeaponComponent::InitAnimNotify()
 {

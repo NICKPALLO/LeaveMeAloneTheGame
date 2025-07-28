@@ -10,6 +10,8 @@ class ALMABaseWeapon;
 class UAnimMontage;
 class USkeletalMeshComponent;
 
+//class FAmmoWeapon;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class LEAVEMEALONE_API ULMA_WeaponComponent : public UActorComponent
 {
@@ -40,12 +42,13 @@ protected:
 	bool AnimReloading = false;
 	void InitAnimNotify();
 	void OnNotifyReloadFinished(USkeletalMeshComponent* SkeletalMesh);
-	//void Shot();
 	bool CanReload() const;
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable)
+	bool GetCurrentWeaponAmmo(FAmmoWeapon& AmmoWeapon) const;
 		
 };

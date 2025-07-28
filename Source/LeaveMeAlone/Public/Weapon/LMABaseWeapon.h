@@ -56,6 +56,8 @@ public:
 	FOnReload OnReload;
 	bool ClipIsFull() const;
 
+	FAmmoWeapon GetCurrentAmmoWeapon() const;
+
 private:
 	FAmmoWeapon CurrentAmmoWeapon;
 	void DecrementBullets();

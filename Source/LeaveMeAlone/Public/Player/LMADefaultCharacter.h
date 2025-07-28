@@ -102,8 +102,9 @@ private:
 	void StopSprint();
 	void DecreaseStamina();
 	void IncreaseStamina();
-	//bool JogStraight();
 
+	UFUNCTION()
 	void OnDeath();
+
 	void RotationPlayerOnCursor();
 };

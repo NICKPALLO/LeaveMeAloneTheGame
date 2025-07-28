@@ -50,13 +50,16 @@ bool ALMABaseWeapon::ClipIsFull() const
 	return CurrentAmmoWeapon.Bullets == AmmoWeapon.Bullets;
 }
 
+FAmmoWeapon ALMABaseWeapon::GetCurrentAmmoWeapon() const
+{
+	return CurrentAmmoWeapon;
+}
+
 void ALMABaseWeapon::DecrementBullets() {
 	--CurrentAmmoWeapon.Bullets;
 	UE_LOG(LogWeapon, Display, TEXT("Bullets = %s"), *FString::FromInt(CurrentAmmoWeapon.Bullets));
 	if (IsCurrentClipEmpty())
 	{
-		//ChangeClip();
-		//тригеррим делегат
 		OnReload.Broadcast();
 	}
 }
